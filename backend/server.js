@@ -92,16 +92,42 @@ app.post('/api/db/init', async (req, res) => {
   }
 });
 
-// User registration endpoint
+// Enhanced user registration endpoint with IVSL professional fields
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, full_name, professional_title, ivsl_registration } = req.body;
+    const {
+      email, password,
+      // Personal Details (based on planning/document-analysis.md lines 14-22)
+      honorable, full_name, professional_title, qualifications,
+      // Professional Registration (lines 23-27)
+      ivsl_registration, professional_status, ivsl_membership_type,
+      // Contact Information (lines 28-35)
+      house_number, street_name, area_name, city, district,
+      phone_number, mobile_number, alternative_contact
+    } = req.body;
 
     // Basic validation
     if (!email || !password || !full_name) {
       return res.status(400).json({
         success: false,
         error: 'Email, password, and full name are required'
+      });
+    }
+
+    // Validate IVSL registration if provided
+    if (ivsl_registration && ivsl_registration.length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'IVSL registration number must be at least 3 characters'
+      });
+    }
+
+    // Validate honorable values
+    const validHonorables = ['Dr', 'Mr', 'Vir', 'Ms', 'Mrs'];
+    if (honorable && !validHonorables.includes(honorable)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid honorable. Must be one of: Dr, Mr, Vir, Ms, Mrs'
       });
     }
 
@@ -118,24 +144,33 @@ app.post('/api/auth/register', async (req, res) => {
     const bcrypt = require('bcryptjs');
     const password_hash = await bcrypt.hash(password, 12);
 
-    // Create user
+    // Generate email verification token
+    const crypto = require('crypto');
+    const email_verification_token = crypto.randomBytes(32).toString('hex');
+
+    // Create user with all professional fields
     const newUser = await db.createUser({
-      email,
-      password_hash,
-      full_name,
-      professional_title,
-      ivsl_registration
+      email, password_hash, honorable, full_name, professional_title,
+      qualifications: qualifications || [],
+      ivsl_registration, professional_status, ivsl_membership_type,
+      house_number, street_name, area_name, city, district,
+      phone_number, mobile_number, alternative_contact,
+      email_verification_token
     });
 
     res.status(201).json({
       success: true,
-      message: '✅ User registered successfully',
+      message: '✅ User registered successfully. Please check your email for verification.',
       user: {
         id: newUser.id,
         email: newUser.email,
+        honorable: newUser.honorable,
         full_name: newUser.full_name,
+        professional_title: newUser.professional_title,
+        ivsl_registration: newUser.ivsl_registration,
         created_at: newUser.created_at
       },
+      verification_required: true,
       timestamp: new Date().toISOString()
     });
 
@@ -146,6 +181,171 @@ app.post('/api/auth/register', async (req, res) => {
       error: 'Failed to register user',
       details: error.message,
       timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Email verification endpoint
+app.post('/api/auth/verify-email', async (req, res) => {
+  try {
+    const { email, token } = req.body;
+
+    if (!email || !token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and verification token are required'
+      });
+    }
+
+    const verifiedUser = await db.verifyUserEmail(email, token);
+    if (!verifiedUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid verification token or email'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '✅ Email verified successfully',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to verify email',
+      details: error.message
+    });
+  }
+});
+
+// Get user profile endpoint
+app.get('/api/auth/profile', async (req, res) => {
+  try {
+    // Note: This would normally require authentication middleware
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    const user = await db.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Remove sensitive information
+    const { password_hash, email_verification_token, ...userProfile } = user;
+
+    res.json({
+      success: true,
+      user: userProfile,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch profile',
+      details: error.message
+    });
+  }
+});
+
+// Update user profile endpoint
+app.put('/api/auth/profile', async (req, res) => {
+  try {
+    const { userId, ...profileData } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    const updatedUser = await db.updateUserProfile(userId, profileData);
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Remove sensitive information
+    const { password_hash, email_verification_token, ...userProfile } = updatedUser;
+
+    res.json({
+      success: true,
+      message: '✅ Profile updated successfully',
+      user: userProfile,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update profile',
+      details: error.message
+    });
+  }
+});
+
+// File upload endpoint for signatures, letterheads, and profile pictures
+app.post('/api/auth/upload-files', async (req, res) => {
+  try {
+    // Note: This is a basic implementation. In production, you'd use multer or similar
+    const { userId, fileType, filePath } = req.body;
+
+    if (!userId || !fileType || !filePath) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID, file type, and file path are required'
+      });
+    }
+
+    const validFileTypes = ['signature', 'letterhead', 'profile_picture'];
+    if (!validFileTypes.includes(fileType)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid file type. Must be: signature, letterhead, or profile_picture'
+      });
+    }
+
+    const fileData = {};
+    fileData[`${fileType}_path`] = filePath;
+
+    const updatedUser = await db.updateUserFiles(userId, fileData);
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `✅ ${fileType} uploaded successfully`,
+      filePath: filePath,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('File upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to upload file',
+      details: error.message
     });
   }
 });
