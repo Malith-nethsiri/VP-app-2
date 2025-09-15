@@ -65,8 +65,14 @@ app.get('/api/test', (req, res) => {
       'GET /api/health - Health check with database status',
       'GET /api/test - Test connectivity',
       'POST /api/db/init - Initialize database schema',
-      'POST /api/auth/register - User registration',
+      'POST /api/db/migrate - Migrate database to enhanced schema',
+      'POST /api/auth/register - Enhanced user registration with IVSL fields',
+      'POST /api/auth/verify-email - Email verification',
+      'GET /api/auth/profile - Get user profile',
+      'PUT /api/auth/profile - Update user profile',
+      'POST /api/auth/upload-files - Upload signature/letterhead/profile picture',
       'POST /api/ai/test - AI service testing',
+      'POST /api/vision/test - Google Vision API testing',
       'POST /api/documents/upload - Document upload (coming soon)'
     ]
   });
@@ -86,6 +92,27 @@ app.post('/api/db/init', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to initialize database schema',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Database migration endpoint for enhanced user fields
+app.post('/api/db/migrate', async (req, res) => {
+  try {
+    const { migrateDatabase } = require('./migrate-database');
+    await migrateDatabase();
+    res.json({
+      success: true,
+      message: '✅ Database migration completed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Database migration error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to migrate database schema',
       details: error.message,
       timestamp: new Date().toISOString()
     });
