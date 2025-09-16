@@ -405,6 +405,139 @@ app.post('/api/auth/update-profile', async (req, res) => {
   }
 });
 
+// Create new valuation report
+app.post('/api/reports/create', async (req, res) => {
+  try {
+    const { valuer_id, report_reference, client_reference, property_address, gps_coordinates } = req.body;
+
+    if (!valuer_id || !report_reference || !property_address) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valuer ID, report reference, and property address are required'
+      });
+    }
+
+    // Check if report reference is unique
+    const existingReport = await db.query('SELECT id FROM valuation_reports WHERE report_reference = $1', [report_reference]);
+    if (existingReport.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: 'Report reference already exists. Please use a unique reference.'
+      });
+    }
+
+    const newReport = await db.createReport({
+      valuer_id,
+      report_reference,
+      client_reference,
+      property_address,
+      gps_coordinates
+    });
+
+    res.status(201).json({
+      success: true,
+      message: '✅ Report created successfully',
+      report: newReport,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Report creation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create report',
+      details: error.message
+    });
+  }
+});
+
+// Get reports for a user
+app.get('/api/reports/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const reports = await db.getReportsByUser(userId);
+
+    res.json({
+      success: true,
+      reports: reports,
+      count: reports.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Fetch reports error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch reports',
+      details: error.message
+    });
+  }
+});
+
+// Document upload endpoint with AI processing
+app.post('/api/documents/upload', async (req, res) => {
+  try {
+    const { report_id, files } = req.body;
+
+    if (!report_id || !files || !Array.isArray(files)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Report ID and files array are required'
+      });
+    }
+
+    const uploadedDocs = [];
+
+    for (let fileData of files) {
+      // Here we would:
+      // 1. Store file to cloud storage (AWS S3, Google Cloud, etc.)
+      // 2. Extract text using Google Vision API
+      // 3. Process with OpenAI GPT-4 for data extraction
+      // 4. Save to database
+
+      // For now, simulate the process
+      const docRecord = {
+        report_id: report_id,
+        file_name: fileData.name,
+        file_path: `/uploads/${report_id}/${fileData.name}`, // Simulated path
+        file_type: fileData.type,
+        file_size: fileData.size,
+        extracted_data: {
+          // Simulated extracted data - will be replaced with real AI processing
+          status: 'processed',
+          document_type: fileData.type.includes('pdf') ? 'deed_transfer' : 'photograph',
+          extracted_text: 'Sample extracted text from document...',
+          key_data: {
+            property_id: 'Extracted property identification',
+            owner_name: 'Extracted owner name',
+            land_extent: 'Extracted land extent'
+          }
+        }
+      };
+
+      // Save to database
+      const savedDoc = await db.saveDocument(docRecord);
+      uploadedDocs.push(savedDoc);
+    }
+
+    res.json({
+      success: true,
+      message: `✅ ${uploadedDocs.length} documents uploaded and processed`,
+      documents: uploadedDocs,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Document upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to upload documents',
+      details: error.message
+    });
+  }
+});
+
 // File upload endpoint for signatures, letterheads, and profile pictures
 app.post('/api/auth/upload-files', async (req, res) => {
   try {

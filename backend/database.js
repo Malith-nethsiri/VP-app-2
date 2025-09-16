@@ -291,6 +291,30 @@ class DatabaseService {
     );
     return result.rows[0];
   }
+
+  // Document management methods
+  async saveDocument(documentData) {
+    const { report_id, file_name, file_path, file_type, file_size, extracted_data } = documentData;
+    const result = await this.query(
+      `INSERT INTO documents (report_id, file_name, file_path, file_type, file_size, extracted_data)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [report_id, file_name, file_path, file_type, file_size, JSON.stringify(extracted_data)]
+    );
+    return result.rows[0];
+  }
+
+  async getDocumentsByReport(report_id) {
+    const result = await this.query(
+      'SELECT * FROM documents WHERE report_id = $1 ORDER BY uploaded_at DESC',
+      [report_id]
+    );
+    return result.rows;
+  }
+
+  async getDocumentById(id) {
+    const result = await this.query('SELECT * FROM documents WHERE id = $1', [id]);
+    return result.rows[0];
+  }
 }
 
 // Export singleton instance

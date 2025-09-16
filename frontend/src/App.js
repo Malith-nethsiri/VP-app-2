@@ -386,6 +386,10 @@ const DashboardPage = () => {
   const [editFormData, setEditFormData] = React.useState({});
   const [saving, setSaving] = React.useState(false);
   const [editError, setEditError] = React.useState('');
+  const [showNewReport, setShowNewReport] = React.useState(false);
+  const [newReportData, setNewReportData] = React.useState({});
+  const [uploadedFiles, setUploadedFiles] = React.useState([]);
+  const [processingFiles, setProcessingFiles] = React.useState(false);
 
   React.useEffect(() => {
     // Get user from localStorage or URL
@@ -629,22 +633,33 @@ const DashboardPage = () => {
         <div style={{
           background: 'rgba(255,255,255,0.1)',
           borderRadius: '15px',
-          padding: '25px',
-          textAlign: 'center'
+          padding: '25px'
         }}>
-          <h3>Reports Dashboard</h3>
-          <p>No reports created yet. Start creating your first professional valuation report.</p>
-          <button style={{
-            padding: '15px 30px',
-            background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}>
-            Create New Report
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: '0' }}>📋 Valuation Reports</h3>
+            <button
+              onClick={() => setShowNewReport(true)}
+              style={{
+                padding: '12px 24px',
+                background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px'
+              }}
+            >
+              ➕ Create New Report
+            </button>
+          </div>
+
+          {/* Reports List */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ textAlign: 'center', opacity: '0.8', padding: '20px 0' }}>
+              No reports created yet. Click "Create New Report" to start your first professional valuation report.
+            </p>
+          </div>
         </div>
 
         {/* Profile Edit Modal */}
@@ -1199,6 +1214,348 @@ const DashboardPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* New Report Creation Modal */}
+        {showNewReport && (
+          <div style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: '1000'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '20px',
+              padding: '30px',
+              maxWidth: '900px',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              color: 'white',
+              width: '95%'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                <h2 style={{ margin: '0' }}>📋 Create New Valuation Report</h2>
+                <button
+                  onClick={() => {setShowNewReport(false); setNewReportData({}); setUploadedFiles([]);}}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    cursor: 'pointer',
+                    fontSize: '20px'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Report Basic Information */}
+              <div style={{ marginBottom: '25px' }}>
+                <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📝 Report Information</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
+                      Report Reference <span style={{ color: '#FF9800' }}>*Required</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 2025/Misc./001/ML"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(255,255,255,0.1)',
+                        color: 'white',
+                        fontSize: '14px'
+                      }}
+                      value={newReportData.report_reference || ''}
+                      onChange={(e) => setNewReportData({...newReportData, report_reference: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Client Reference</label>
+                    <input
+                      type="text"
+                      placeholder="Client's reference number"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(255,255,255,0.1)',
+                        color: 'white',
+                        fontSize: '14px'
+                      }}
+                      value={newReportData.client_reference || ''}
+                      onChange={(e) => setNewReportData({...newReportData, client_reference: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
+                    Property Address <span style={{ color: '#FF9800' }}>*Required</span>
+                  </label>
+                  <textarea
+                    placeholder="Enter the full property address for valuation"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      background: 'rgba(255,255,255,0.1)',
+                      color: 'white',
+                      fontSize: '14px',
+                      minHeight: '60px',
+                      resize: 'vertical'
+                    }}
+                    value={newReportData.property_address || ''}
+                    onChange={(e) => setNewReportData({...newReportData, property_address: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Document Upload Section */}
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📄 Upload Documents</h3>
+
+                <div
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const files = Array.from(e.dataTransfer.files);
+                    handleFileUpload(files);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{
+                    border: '2px dashed rgba(255,255,255,0.3)',
+                    borderRadius: '12px',
+                    padding: '40px 20px',
+                    textAlign: 'center',
+                    background: 'rgba(255,255,255,0.05)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onClick={() => document.getElementById('fileInput').click()}
+                >
+                  <div style={{ fontSize: '3rem', marginBottom: '15px' }}>📁</div>
+                  <h4 style={{ margin: '0 0 10px 0' }}>Drop files here or click to upload</h4>
+                  <p style={{ margin: '0', opacity: '0.8', fontSize: '14px' }}>
+                    Supported: PDF, JPG, PNG, TIFF • Max size: 10MB per file
+                  </p>
+                  <input
+                    id="fileInput"
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleFileUpload(Array.from(e.target.files))}
+                  />
+                </div>
+
+                {/* File Upload Handler */}
+                {(() => {
+                  window.handleFileUpload = async (files) => {
+                    if (files.length === 0) return;
+
+                    setProcessingFiles(true);
+                    const newFiles = [];
+
+                    for (let file of files) {
+                      // Basic validation
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                        continue;
+                      }
+
+                      const fileData = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        lastModified: file.lastModified,
+                        file: file,
+                        status: 'uploading',
+                        id: Date.now() + Math.random()
+                      };
+
+                      newFiles.push(fileData);
+                    }
+
+                    setUploadedFiles(prev => [...prev, ...newFiles]);
+                    setProcessingFiles(false);
+
+                    // Here we would typically upload to server and process with AI
+                    // For now, we'll simulate the process
+                    setTimeout(() => {
+                      setUploadedFiles(prev => prev.map(f =>
+                        newFiles.find(nf => nf.id === f.id) ? {...f, status: 'ready'} : f
+                      ));
+                    }, 2000);
+                  };
+                  return null;
+                })()}
+
+                {/* Uploaded Files List */}
+                {uploadedFiles.length > 0 && (
+                  <div style={{ marginTop: '20px' }}>
+                    <h4 style={{ marginBottom: '15px' }}>Uploaded Documents:</h4>
+                    {uploadedFiles.map((file, index) => (
+                      <div key={file.id} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '12px 15px',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        border: '1px solid rgba(255,255,255,0.2)'
+                      }}>
+                        <div style={{ fontSize: '1.5rem', marginRight: '12px' }}>
+                          {file.type.includes('pdf') ? '📄' : '🖼️'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600', fontSize: '14px' }}>{file.name}</div>
+                          <div style={{ fontSize: '12px', opacity: '0.7' }}>
+                            {(file.size / 1024).toFixed(1)} KB • {file.status === 'uploading' ? 'Processing...' : 'Ready'}
+                          </div>
+                        </div>
+                        <div style={{
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          background: file.status === 'ready' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(255, 152, 0, 0.3)',
+                          color: file.status === 'ready' ? '#4CAF50' : '#FF9800'
+                        }}>
+                          {file.status === 'ready' ? '✅ Ready' : '⏳ Processing'}
+                        </div>
+                        <button
+                          onClick={() => setUploadedFiles(prev => prev.filter(f => f.id !== file.id))}
+                          style={{
+                            background: 'rgba(255,0,0,0.3)',
+                            border: 'none',
+                            color: 'white',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            marginLeft: '10px'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
+                <button
+                  onClick={() => {setShowNewReport(false); setNewReportData({}); setUploadedFiles([]);}}
+                  style={{
+                    padding: '12px 25px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    color: 'white',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!newReportData.report_reference || !newReportData.property_address || processingFiles}
+                  onClick={async () => {
+                    try {
+                      setProcessingFiles(true);
+
+                      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
+                      // Create the report first
+                      const reportResponse = await fetch(`${API_BASE_URL}/api/reports/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          valuer_id: user.id,
+                          report_reference: newReportData.report_reference,
+                          client_reference: newReportData.client_reference || '',
+                          property_address: newReportData.property_address
+                        })
+                      });
+
+                      const reportData = await reportResponse.json();
+
+                      if (!reportData.success) {
+                        alert(`Failed to create report: ${reportData.error}`);
+                        setProcessingFiles(false);
+                        return;
+                      }
+
+                      // If there are files, upload and process them
+                      if (uploadedFiles.length > 0) {
+                        const filesData = uploadedFiles.map(f => ({
+                          name: f.name,
+                          size: f.size,
+                          type: f.type
+                        }));
+
+                        const docsResponse = await fetch(`${API_BASE_URL}/api/documents/upload`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            report_id: reportData.report.id,
+                            files: filesData
+                          })
+                        });
+
+                        const docsData = await docsResponse.json();
+                        console.log('Documents processed:', docsData);
+                      }
+
+                      // Success - close modal and show success message
+                      alert(`✅ Report "${newReportData.report_reference}" created successfully!`);
+                      setShowNewReport(false);
+                      setNewReportData({});
+                      setUploadedFiles([]);
+                      setProcessingFiles(false);
+
+                    } catch (error) {
+                      console.error('Error creating report:', error);
+                      alert('Failed to create report. Please try again.');
+                      setProcessingFiles(false);
+                    }
+                  }}
+                  style={{
+                    padding: '12px 25px',
+                    background: (!newReportData.report_reference || !newReportData.property_address || processingFiles)
+                      ? 'rgba(128,128,128,0.5)'
+                      : 'linear-gradient(45deg, #4ECDC4, #44A08D)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: (!newReportData.report_reference || !newReportData.property_address || processingFiles)
+                      ? 'not-allowed'
+                      : 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  {processingFiles ? 'Creating Report...' : '🚀 Create Report & Process Documents'}
+                </button>
+              </div>
             </div>
           </div>
         )}
