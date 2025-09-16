@@ -508,7 +508,7 @@ const DashboardPage = () => {
       {/* Content */}
       <div style={{ padding: '30px' }}>
         {/* Profile Completeness Alert */}
-        {(!user.ivsl_registration || !user.professional_title || !user.phone_number) && (
+        {(!user.ivsl_registration || !user.professional_title || !user.phone_number || !user.mobile_number) && (
           <div style={{
             background: 'linear-gradient(45deg, #FF9800, #F57C00)',
             borderRadius: '15px',
@@ -599,8 +599,9 @@ const DashboardPage = () => {
                 {Math.round(((user.professional_title ? 1 : 0) +
                            (user.ivsl_registration ? 1 : 0) +
                            (user.phone_number ? 1 : 0) +
+                           (user.mobile_number ? 1 : 0) +
                            (user.professional_status ? 1 : 0) +
-                           (user.ivsl_membership_type ? 1 : 0)) / 5 * 100)}%
+                           (user.ivsl_membership_type ? 1 : 0)) / 6 * 100)}%
               </span>
             </div>
             <div style={{
@@ -614,8 +615,9 @@ const DashboardPage = () => {
                 width: `${((user.professional_title ? 1 : 0) +
                           (user.ivsl_registration ? 1 : 0) +
                           (user.phone_number ? 1 : 0) +
+                          (user.mobile_number ? 1 : 0) +
                           (user.professional_status ? 1 : 0) +
-                          (user.ivsl_membership_type ? 1 : 0)) / 5 * 100}%`,
+                          (user.ivsl_membership_type ? 1 : 0)) / 6 * 100}%`,
                 height: '100%',
                 background: 'linear-gradient(45deg, #4ECDC4, #44A08D)',
                 transition: 'width 0.3s ease'
@@ -864,67 +866,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Report Reference System */}
-                <div style={{ marginBottom: '25px' }}>
-                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📋 Report Reference System</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
-                        Reference Prefix <span style={{ color: '#FF9800' }}>*Required</span>
-                      </label>
-                      <input
-                        type="text"
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(255,255,255,0.3)',
-                          background: 'rgba(255,255,255,0.1)',
-                          color: 'white',
-                          fontSize: '14px'
-                        }}
-                        placeholder="e.g., ML, JD, PS (Your initials)"
-                        value={editFormData.reference_prefix || user.reference_prefix || ''}
-                        onChange={(e) => setEditFormData({...editFormData, reference_prefix: e.target.value.toUpperCase()})}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Report Counter</label>
-                      <input
-                        type="number"
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(255,255,255,0.3)',
-                          background: 'rgba(255,255,255,0.1)',
-                          color: 'white',
-                          fontSize: '14px'
-                        }}
-                        placeholder="Next report number"
-                        value={editFormData.report_counter || user.report_counter || '1'}
-                        onChange={(e) => setEditFormData({...editFormData, report_counter: e.target.value})}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{
-                    background: 'rgba(76, 175, 80, 0.1)',
-                    border: '1px solid rgba(76, 175, 80, 0.3)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginTop: '15px',
-                    fontSize: '13px'
-                  }}>
-                    📋 <strong>Reference Preview:</strong> Your next report reference will be:<br/>
-                    <div style={{ fontFamily: 'monospace', marginTop: '5px', paddingLeft: '15px', fontWeight: 'bold', color: '#4ECDC4' }}>
-                      {new Date().getFullYear()}/Misc./{editFormData.report_counter || user.report_counter || '1'}/{editFormData.reference_prefix || user.reference_prefix || 'XX'}
-                    </div>
-                    <div style={{ marginTop: '8px', fontSize: '12px', opacity: '0.9' }}>
-                      Format: YEAR/TYPE/NUMBER/PREFIX (e.g., 2025/Misc./348/ML)
-                    </div>
-                  </div>
-                </div>
 
                 {/* Qualifications Section */}
                 <div style={{ marginBottom: '25px' }}>

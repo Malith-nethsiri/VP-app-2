@@ -101,10 +101,6 @@ class DatabaseService {
           letterhead_path VARCHAR(500),
           profile_picture_path VARCHAR(500),
 
-          -- Report Reference System
-          reference_prefix VARCHAR(10),
-          report_counter INTEGER DEFAULT 1,
-
           -- Account Management
           email_verified BOOLEAN DEFAULT FALSE,
           email_verification_token VARCHAR(255),
@@ -190,8 +186,7 @@ class DatabaseService {
       honorable, full_name, professional_title, qualifications,
       ivsl_registration, professional_status, ivsl_membership_type,
       house_number, street_name, area_name, city, district,
-      phone_number, mobile_number, alternative_contact,
-      reference_prefix, report_counter
+      phone_number, mobile_number, alternative_contact
     } = profileData;
 
     const result = await this.query(
@@ -211,8 +206,6 @@ class DatabaseService {
         phone_number = COALESCE($14, phone_number),
         mobile_number = COALESCE($15, mobile_number),
         alternative_contact = COALESCE($16, alternative_contact),
-        reference_prefix = COALESCE($17, reference_prefix),
-        report_counter = COALESCE($18, report_counter),
         updated_at = NOW()
       WHERE id = $1 RETURNING *`,
       [
@@ -222,8 +215,7 @@ class DatabaseService {
         JSON.stringify(qualifications),
         ivsl_registration, professional_status, ivsl_membership_type,
         house_number, street_name, area_name, city, district,
-        phone_number, mobile_number, alternative_contact,
-        reference_prefix, report_counter
+        phone_number, mobile_number, alternative_contact
       ]
     );
     return result.rows[0];
