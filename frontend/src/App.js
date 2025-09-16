@@ -391,6 +391,45 @@ const DashboardPage = () => {
   const [uploadedFiles, setUploadedFiles] = React.useState([]);
   const [processingFiles, setProcessingFiles] = React.useState(false);
 
+  // File upload handler function
+  const handleFileUpload = async (files) => {
+    if (files.length === 0) return;
+
+    setProcessingFiles(true);
+    const newFiles = [];
+
+    for (let file of files) {
+      // Basic validation
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+        continue;
+      }
+
+      const fileData = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+        file: file,
+        status: 'uploading',
+        id: Date.now() + Math.random()
+      };
+
+      newFiles.push(fileData);
+    }
+
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+    setProcessingFiles(false);
+
+    // Here we would typically upload to server and process with AI
+    // For now, we'll simulate the process
+    setTimeout(() => {
+      setUploadedFiles(prev => prev.map(f =>
+        newFiles.find(nf => nf.id === f.id) ? {...f, status: 'ready'} : f
+      ));
+    }, 2000);
+  };
+
   React.useEffect(() => {
     // Get user from localStorage or URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -1365,47 +1404,6 @@ const DashboardPage = () => {
                   />
                 </div>
 
-                {/* File Upload Handler */}
-                {(() => {
-                  window.handleFileUpload = async (files) => {
-                    if (files.length === 0) return;
-
-                    setProcessingFiles(true);
-                    const newFiles = [];
-
-                    for (let file of files) {
-                      // Basic validation
-                      if (file.size > 10 * 1024 * 1024) {
-                        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
-                        continue;
-                      }
-
-                      const fileData = {
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        lastModified: file.lastModified,
-                        file: file,
-                        status: 'uploading',
-                        id: Date.now() + Math.random()
-                      };
-
-                      newFiles.push(fileData);
-                    }
-
-                    setUploadedFiles(prev => [...prev, ...newFiles]);
-                    setProcessingFiles(false);
-
-                    // Here we would typically upload to server and process with AI
-                    // For now, we'll simulate the process
-                    setTimeout(() => {
-                      setUploadedFiles(prev => prev.map(f =>
-                        newFiles.find(nf => nf.id === f.id) ? {...f, status: 'ready'} : f
-                      ));
-                    }, 2000);
-                  };
-                  return null;
-                })()}
 
                 {/* Uploaded Files List */}
                 {uploadedFiles.length > 0 && (
