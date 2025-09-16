@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './UserRegistration.css';
 
 interface RegistrationData {
@@ -30,6 +31,7 @@ const UserRegistration: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<RegistrationData>({
     email: '',
@@ -166,19 +168,35 @@ const UserRegistration: React.FC = () => {
   if (success) {
     return (
       <div className="registration-container">
-        <div className="success-message">
-          <div className="success-icon">✅</div>
-          <h2>Registration Successful!</h2>
-          <p>
-            Your account has been created successfully. Please check your email
-            for verification instructions before logging in.
-          </p>
-          <button
-            className="login-button"
-            onClick={() => window.location.href = '/login'}
-          >
-            Go to Login
-          </button>
+        <div className="registration-card">
+          <div className="success-message">
+            <div className="success-icon">✅</div>
+            <h2>Registration Successful!</h2>
+            <p>
+              Your account has been created successfully. Please check your email
+              for verification instructions before logging in.
+            </p>
+            <div className="success-actions">
+              <button
+                className="verify-button primary"
+                onClick={() => navigate('/verify-email')}
+              >
+                📧 Verify Email Now
+              </button>
+              <button
+                className="login-button secondary"
+                onClick={() => navigate('/login')}
+              >
+                Skip to Login
+              </button>
+            </div>
+            <div className="success-note">
+              <p>
+                <strong>Note:</strong> Email verification is required for full access
+                to the professional valuation system features.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -517,8 +535,21 @@ const UserRegistration: React.FC = () => {
         <div className="registration-footer">
           <p>
             Already have an account?
-            <a href="/login" className="login-link"> Sign in here</a>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="login-link"
+            >
+              Sign in here
+            </button>
           </p>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="home-link"
+          >
+            ← Back to Home
+          </button>
         </div>
       </div>
     </div>

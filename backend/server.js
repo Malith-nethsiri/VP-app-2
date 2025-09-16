@@ -252,16 +252,20 @@ app.post('/api/auth/verify-email', async (req, res) => {
 app.get('/api/auth/profile', async (req, res) => {
   try {
     // Note: This would normally require authentication middleware
-    const { userId } = req.query;
+    const { userId, email } = req.query;
 
-    if (!userId) {
+    let user;
+    if (userId) {
+      user = await db.getUserById(userId);
+    } else if (email) {
+      user = await db.getUserByEmail(email);
+    } else {
       return res.status(400).json({
         success: false,
-        error: 'User ID is required'
+        error: 'User ID or email is required'
       });
     }
 
-    const user = await db.getUserById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,

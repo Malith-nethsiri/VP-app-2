@@ -312,15 +312,20 @@
   font-size: 14px;
 }
 
-.login-link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 500;
-  margin-left: 5px;
+.login-link, .home-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  transition: color 0.3s ease;
+  margin: 5px;
 }
 
-.login-link:hover {
-  text-decoration: underline;
+.login-link:hover, .home-link:hover {
+  color: #764ba2;
 }
 
 /* Responsive Design */
@@ -459,6 +464,81 @@
 
 .nav-button.submit:disabled {
   background: #6c757d;
+}
+
+/* Success Message Styles */
+.success-message {
+  text-align: center;
+  padding: 20px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.success-message h2 {
+  color: #28a745;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.success-message p {
+  color: #666;
+  margin-bottom: 25px;
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+.success-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.verify-button, .success-actions .login-button {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 160px;
+  text-decoration: none;
+}
+
+.verify-button.primary {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: white;
+}
+
+.success-actions .login-button.secondary {
+  background: #f8f9fa;
+  color: #495057;
+  border: 2px solid #e1e5e9;
+}
+
+.verify-button:hover, .success-actions .login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.success-note {
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.success-note p {
+  color: #155724;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 /* Animation for Step Transitions */

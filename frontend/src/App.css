@@ -275,6 +275,46 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Error Container Styles */
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  text-align: center;
+}
+
+.error-container h2 {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.error-container p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.login-link {
+  display: inline-block;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
 @media (max-width: 768px) {
   .demo-buttons {
     flex-direction: column;
@@ -288,5 +328,9 @@
 
   .demo-section {
     padding: 20px;
+  }
+
+  .error-container h2 {
+    font-size: 1.5rem;
   }
 }

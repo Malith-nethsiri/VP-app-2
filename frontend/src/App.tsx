@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import './App.css';
+
+// Import components
+import UserRegistration from './components/UserRegistration';
+import UserDashboard from './components/UserDashboard';
+import ProfessionalCredentials from './components/ProfessionalCredentials';
+import Login from './components/Login';
+import EmailVerification from './components/EmailVerification';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -16,7 +24,59 @@ interface ApiResponse {
   endpoints: string[];
 }
 
-function App() {
+// Dashboard Wrapper Component to handle user data
+const DashboardWrapper: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId');
+
+  if (!userId) {
+    return (
+      <div className="error-container">
+        <h2>❌ Access Denied</h2>
+        <p>Please log in to access your dashboard</p>
+        <Link to="/login" className="login-link">Go to Login</Link>
+      </div>
+    );
+  }
+
+  return <UserDashboard userId={parseInt(userId)} />;
+};
+
+// Credentials Wrapper Component
+const CredentialsWrapper: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Try to get user from localStorage or redirect to login
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      setUser(JSON.parse(currentUser));
+    } else {
+      navigate('/login');
+    }
+    setLoading(false);
+  }, [navigate]);
+
+  const handleUserUpdate = (updatedUser: any) => {
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  };
+
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // Will redirect
+  }
+
+  return <ProfessionalCredentials user={user} onUpdate={handleUserUpdate} />;
+};
+
+// Home Component
+const Home: React.FC = () => {
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [aiTest, setAiTest] = useState<any>(null);
@@ -172,32 +232,38 @@ function App() {
         <div className="demo-section">
           <h2>🎯 Professional Valuer System Demo</h2>
           <div className="demo-buttons">
-            <button
-              onClick={() => window.location.href = '/register'}
-              className="demo-button primary"
-            >
-              👤 Professional Registration Demo
-            </button>
-            <button
-              onClick={() => window.location.href = '/dashboard'}
-              className="demo-button secondary"
-            >
-              📊 Valuer Dashboard Demo
-            </button>
-            <button
-              onClick={() => window.location.href = '/credentials'}
-              className="demo-button secondary"
-            >
-              🎓 Credentials Management Demo
-            </button>
+            <Link to="/register" className="demo-button primary">
+              👤 Professional Registration
+            </Link>
+            <Link to="/login" className="demo-button secondary">
+              🔐 Valuer Login
+            </Link>
+            <Link to="/credentials" className="demo-button secondary">
+              🎓 Credentials Management
+            </Link>
           </div>
           <p className="demo-note">
-            <strong>Note:</strong> These are demo components showing the enhanced IVSL-compliant
-            professional valuer registration and management system implemented in Task 1.
+            <strong>Note:</strong> Complete IVSL-compliant professional valuer registration
+            and management system. Register first, then login to access your dashboard.
           </p>
         </div>
       </header>
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<UserRegistration />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify-email" element={<EmailVerification />} />
+        <Route path="/dashboard" element={<DashboardWrapper />} />
+        <Route path="/credentials" element={<CredentialsWrapper />} />
+      </Routes>
+    </Router>
   );
 }
 
