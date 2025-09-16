@@ -410,10 +410,10 @@ app.post('/api/reports/create', async (req, res) => {
   try {
     const { valuer_id, report_reference, client_reference, property_address, gps_coordinates } = req.body;
 
-    if (!valuer_id || !report_reference || !property_address) {
+    if (!valuer_id || !report_reference) {
       return res.status(400).json({
         success: false,
-        error: 'Valuer ID, report reference, and property address are required'
+        error: 'Valuer ID and report reference are required'
       });
     }
 

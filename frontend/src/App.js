@@ -1303,73 +1303,44 @@ const DashboardPage = () => {
               {/* Report Basic Information */}
               <div style={{ marginBottom: '25px' }}>
                 <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📝 Report Information</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
-                      Report Reference <span style={{ color: '#FF9800' }}>*Required</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., 2025/Misc./001/ML"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
-                        color: 'white',
-                        fontSize: '14px'
-                      }}
-                      value={newReportData.report_reference || ''}
-                      onChange={(e) => setNewReportData({...newReportData, report_reference: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Client Reference</label>
-                    <input
-                      type="text"
-                      placeholder="Client's reference number"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
-                        color: 'white',
-                        fontSize: '14px'
-                      }}
-                      value={newReportData.client_reference || ''}
-                      onChange={(e) => setNewReportData({...newReportData, client_reference: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
-                    Property Address <span style={{ color: '#FF9800' }}>*Required</span>
+                <div style={{ maxWidth: '400px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                    Report Reference Number <span style={{ color: '#FF9800' }}>*Required</span>
                   </label>
-                  <textarea
-                    placeholder="Enter the full property address for valuation"
+                  <input
+                    type="text"
+                    placeholder="e.g., 2025/Misc./001/ML"
                     style={{
                       width: '100%',
-                      padding: '10px',
+                      padding: '12px',
                       borderRadius: '8px',
                       border: '1px solid rgba(255,255,255,0.3)',
                       background: 'rgba(255,255,255,0.1)',
                       color: 'white',
-                      fontSize: '14px',
-                      minHeight: '60px',
-                      resize: 'vertical'
+                      fontSize: '14px'
                     }}
-                    value={newReportData.property_address || ''}
-                    onChange={(e) => setNewReportData({...newReportData, property_address: e.target.value})}
+                    value={newReportData.report_reference || ''}
+                    onChange={(e) => setNewReportData({...newReportData, report_reference: e.target.value})}
                   />
+                  <div style={{ fontSize: '12px', opacity: '0.8', marginTop: '6px' }}>
+                    💡 Use your preferred reference format (e.g., 2025/001/JS, ML-2025-348, etc.)
+                  </div>
                 </div>
               </div>
 
               {/* Document Upload Section */}
               <div style={{ marginBottom: '30px' }}>
-                <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📄 Upload Documents</h3>
+                <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📄 Upload Property Documents</h3>
+                <div style={{
+                  background: 'rgba(76, 175, 80, 0.1)',
+                  border: '1px solid rgba(76, 175, 80, 0.3)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginBottom: '15px',
+                  fontSize: '13px'
+                }}>
+                  🤖 <strong>AI-Powered Extraction:</strong> Upload your property documents (deeds, plans, photographs) and our AI will automatically extract property address, ownership details, boundaries, and other key information for your report.
+                </div>
 
                 <div
                   onDrop={(e) => {
@@ -1476,7 +1447,7 @@ const DashboardPage = () => {
                   Cancel
                 </button>
                 <button
-                  disabled={!newReportData.report_reference || !newReportData.property_address || processingFiles}
+                  disabled={!newReportData.report_reference || uploadedFiles.length === 0 || processingFiles}
                   onClick={async () => {
                     try {
                       setProcessingFiles(true);
@@ -1490,8 +1461,8 @@ const DashboardPage = () => {
                         body: JSON.stringify({
                           valuer_id: user.id,
                           report_reference: newReportData.report_reference,
-                          client_reference: newReportData.client_reference || '',
-                          property_address: newReportData.property_address
+                          client_reference: '',
+                          property_address: 'To be extracted from uploaded documents'
                         })
                       });
 
@@ -1539,19 +1510,19 @@ const DashboardPage = () => {
                   }}
                   style={{
                     padding: '12px 25px',
-                    background: (!newReportData.report_reference || !newReportData.property_address || processingFiles)
+                    background: (!newReportData.report_reference || uploadedFiles.length === 0 || processingFiles)
                       ? 'rgba(128,128,128,0.5)'
                       : 'linear-gradient(45deg, #4ECDC4, #44A08D)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '10px',
-                    cursor: (!newReportData.report_reference || !newReportData.property_address || processingFiles)
+                    cursor: (!newReportData.report_reference || uploadedFiles.length === 0 || processingFiles)
                       ? 'not-allowed'
                       : 'pointer',
                     fontWeight: '600'
                   }}
                 >
-                  {processingFiles ? 'Creating Report...' : '🚀 Create Report & Process Documents'}
+                  {processingFiles ? 'Creating Report...' : '🚀 Create Report & Extract Data'}
                 </button>
               </div>
             </div>
