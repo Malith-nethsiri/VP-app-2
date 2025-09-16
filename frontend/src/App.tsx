@@ -147,6 +147,38 @@ const Home: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
+        <div style={{position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px'}}>
+          <Link
+            to="/register"
+            style={{
+              padding: '10px 20px',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              color: 'white',
+              background: 'rgba(255, 107, 107, 0.8)',
+              fontWeight: '600',
+              fontSize: '14px',
+              border: '2px solid white'
+            }}
+          >
+            👤 Register
+          </Link>
+          <Link
+            to="/login"
+            style={{
+              padding: '10px 20px',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              color: 'white',
+              background: 'rgba(78, 205, 196, 0.8)',
+              fontWeight: '600',
+              fontSize: '14px',
+              border: '2px solid white'
+            }}
+          >
+            🔐 Login
+          </Link>
+        </div>
         <h1>🏠 AI-Powered Valuation System</h1>
         <p>Professional Property Valuation Reports with AI Technology</p>
 
@@ -229,20 +261,68 @@ const Home: React.FC = () => {
           </ol>
         </div>
 
-        <div className="demo-section">
-          <h2>🎯 Professional Valuer System Demo</h2>
-          <div className="demo-buttons">
-            <Link to="/register" className="demo-button primary">
+        <div className="demo-section" style={{backgroundColor: 'rgba(255,255,255,0.15)', padding: '30px', margin: '20px 0', borderRadius: '15px'}}>
+          <h2 style={{color: 'white', marginBottom: '25px'}}>🎯 Professional Valuer System Demo</h2>
+          <div className="demo-buttons" style={{display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', margin: '25px 0'}}>
+            <Link
+              to="/register"
+              className="demo-button primary"
+              style={{
+                padding: '15px 25px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                color: 'white',
+                background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                fontWeight: '600',
+                fontSize: '15px',
+                minWidth: '200px',
+                display: 'inline-block',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
+              }}
+            >
               👤 Professional Registration
             </Link>
-            <Link to="/login" className="demo-button secondary">
+            <Link
+              to="/login"
+              className="demo-button secondary"
+              style={{
+                padding: '15px 25px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                color: 'white',
+                background: 'linear-gradient(45deg, #4ECDC4, #45B7AA)',
+                fontWeight: '600',
+                fontSize: '15px',
+                minWidth: '200px',
+                display: 'inline-block',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
+              }}
+            >
               🔐 Valuer Login
             </Link>
-            <Link to="/credentials" className="demo-button secondary">
+            <Link
+              to="/credentials"
+              className="demo-button secondary"
+              style={{
+                padding: '15px 25px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                color: 'white',
+                background: 'linear-gradient(45deg, #6C5CE7, #5A4FCF)',
+                fontWeight: '600',
+                fontSize: '15px',
+                minWidth: '200px',
+                display: 'inline-block',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
+              }}
+            >
               🎓 Credentials Management
             </Link>
           </div>
-          <p className="demo-note">
+          <p className="demo-note" style={{color: 'white', fontSize: '14px', opacity: 0.9}}>
             <strong>Note:</strong> Complete IVSL-compliant professional valuer registration
             and management system. Register first, then login to access your dashboard.
           </p>
