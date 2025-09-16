@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const db = require('./database');
+const visionService = require('./visionService');
+const aiExtractionService = require('./aiExtractionService');
 
 const app = express();
 
@@ -73,6 +75,7 @@ app.get('/api/test', (req, res) => {
       'POST /api/auth/upload-files - Upload signature/letterhead/profile picture',
       'POST /api/ai/test - AI service testing',
       'POST /api/vision/test - Google Vision API testing',
+      'POST /api/ai/test - OpenAI GPT-4 API testing',
       'POST /api/documents/upload - Document upload (coming soon)'
     ]
   });
@@ -487,43 +490,96 @@ app.post('/api/documents/upload', async (req, res) => {
       });
     }
 
+    console.log(`🔄 Processing ${files.length} documents with AI extraction...`);
     const uploadedDocs = [];
 
-    for (let fileData of files) {
-      // Here we would:
-      // 1. Store file to cloud storage (AWS S3, Google Cloud, etc.)
-      // 2. Extract text using Google Vision API
-      // 3. Process with OpenAI GPT-4 for data extraction
-      // 4. Save to database
+    // Step 1: Extract text with Vision API
+    const visionResults = await visionService.batchExtractText(files);
 
-      // For now, simulate the process
+    // Step 2: Extract structured data with AI
+    console.log('🤖 Starting AI data extraction phase...');
+    const aiResults = await aiExtractionService.batchExtractData(visionResults);
+
+    // Step 3: Combine and save results
+    const combinedResults = aiExtractionService.combineExtractedData(aiResults);
+
+    for (let i = 0; i < files.length; i++) {
+      const fileData = files[i];
+      const visionResult = visionResults[i];
+      const aiResult = aiResults[i];
+
+      console.log(`💾 Saving document: ${fileData.name}`);
+
       const docRecord = {
         report_id: report_id,
         file_name: fileData.name,
-        file_path: `/uploads/${report_id}/${fileData.name}`, // Simulated path
+        file_path: `/uploads/${report_id}/${fileData.name}`,
         file_type: fileData.type,
         file_size: fileData.size,
         extracted_data: {
-          // Simulated extracted data - will be replaced with real AI processing
-          status: 'processed',
-          document_type: fileData.type.includes('pdf') ? 'deed_transfer' : 'photograph',
-          extracted_text: 'Sample extracted text from document...',
-          key_data: {
-            property_id: 'Extracted property identification',
-            owner_name: 'Extracted owner name',
-            land_extent: 'Extracted land extent'
+          // Vision API results
+          ocr_status: visionResult.success ? 'success' : 'failed',
+          document_type: visionResult.metadata?.documentType || 'unknown',
+          language: visionResult.metadata?.language || 'unknown',
+          extracted_text: visionResult.extractedText || '',
+          ocr_confidence: visionResult.confidence || 0,
+
+          // AI extraction results
+          ai_status: aiResult.success ? 'success' : 'failed',
+          ai_confidence: aiResult.confidence || 0,
+          ai_model: aiResult.aiModel || 'gpt-4',
+          tokens_used: aiResult.tokensUsed || 0,
+
+          // Extracted property data
+          key_data: aiResult.extractedData || {},
+
+          // Processing metadata
+          processing_date: new Date().toISOString(),
+          errors: {
+            vision_error: visionResult.error || null,
+            ai_error: aiResult.error || null
           }
         }
       };
 
       // Save to database
       const savedDoc = await db.saveDocument(docRecord);
-      uploadedDocs.push(savedDoc);
+      uploadedDocs.push({
+        ...savedDoc,
+        processing_summary: {
+          vision_success: visionResult.success,
+          ai_success: aiResult.success,
+          text_extracted: visionResult.extractedText?.length || 0,
+          data_fields_found: Object.keys(aiResult.extractedData || {}).length,
+          overall_confidence: Math.round((visionResult.confidence + aiResult.confidence) / 2)
+        }
+      });
     }
+
+    // Update report with combined property data
+    if (combinedResults.combinedData && Object.keys(combinedResults.combinedData).length > 0) {
+      console.log('🏠 Updating report with extracted property data...');
+      await db.updateReport(report_id, {
+        report_data: combinedResults.combinedData,
+        status: 'data_extracted'
+      });
+    }
+
+    const successfulOCR = uploadedDocs.filter(d => d.processing_summary.vision_success).length;
+    const successfulAI = uploadedDocs.filter(d => d.processing_summary.ai_success).length;
 
     res.json({
       success: true,
-      message: `✅ ${uploadedDocs.length} documents uploaded and processed`,
+      message: `✅ ${uploadedDocs.length} documents processed with AI extraction`,
+      processing_summary: {
+        total_documents: uploadedDocs.length,
+        successful_ocr: successfulOCR,
+        successful_ai_extraction: successfulAI,
+        combined_data_fields: Object.keys(combinedResults.combinedData || {}).length,
+        average_confidence: combinedResults.averageConfidence || 0,
+        primary_source: combinedResults.primarySource
+      },
+      extracted_property_data: combinedResults.combinedData,
       documents: uploadedDocs,
       timestamp: new Date().toISOString()
     });
@@ -630,17 +686,65 @@ app.post('/api/ai/test', async (req, res) => {
 // Google Vision API test endpoint
 app.post('/api/vision/test', async (req, res) => {
   try {
-    res.json({
-      success: true,
-      message: 'Google Vision API endpoint ready',
-      note: 'Full OCR functionality will be implemented next',
-      timestamp: new Date().toISOString()
-    });
+    console.log('🧪 Testing Google Vision API connection...');
+    const testResult = await visionService.testConnection();
+
+    if (testResult.success) {
+      res.json({
+        success: true,
+        message: '✅ Google Vision API is working correctly',
+        connection: testResult,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        success: false,
+        message: '❌ Google Vision API connection failed',
+        error: testResult.error,
+        details: 'Please check your Google Cloud credentials',
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
+    console.error('Vision API test error:', error);
     res.status(500).json({
       success: false,
-      error: 'Vision API error',
-      details: error.message
+      error: 'Vision API test failed',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// OpenAI API test endpoint
+app.post('/api/ai/test', async (req, res) => {
+  try {
+    console.log('🧪 Testing OpenAI API connection...');
+    const testResult = await aiExtractionService.testConnection();
+
+    if (testResult.success) {
+      res.json({
+        success: true,
+        message: '✅ OpenAI API is working correctly',
+        connection: testResult,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        success: false,
+        message: '❌ OpenAI API connection failed',
+        error: testResult.error,
+        details: 'Please check your OpenAI API key',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    console.error('OpenAI API test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'OpenAI API test failed',
+      details: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 });

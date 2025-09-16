@@ -8,21 +8,25 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["valuation", "ai", "backend"],
+  "keywords": [
+    "valuation",
+    "ai",
+    "backend"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
+    "@google-cloud/vision": "^4.3.3",
+    "@googlemaps/google-maps-services-js": "^3.3.42",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "openai": "^4.20.0",
-    "@google-cloud/vision": "^4.0.0",
-    "@googlemaps/google-maps-services-js": "^3.3.42",
-    "pg": "^8.11.3",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "openai": "^4.104.0",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
