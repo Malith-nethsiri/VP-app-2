@@ -243,6 +243,8 @@ const Home: React.FC = () => {
             <p><strong>Backend:</strong> Deployed on Railway</p>
             <p><strong>API URL:</strong> {API_BASE_URL}</p>
             <p><strong>Build Time:</strong> {new Date().toLocaleString()}</p>
+            <p><strong>Version:</strong> v2.1 - Navigation Fixed</p>
+            <p><strong>Commit:</strong> faa84b7</p>
           </div>
         </div>
 
