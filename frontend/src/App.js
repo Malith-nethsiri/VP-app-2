@@ -864,36 +864,196 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
+                {/* Report Reference System */}
+                <div style={{ marginBottom: '25px' }}>
+                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📋 Report Reference System</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
+                        Reference Prefix <span style={{ color: '#FF9800' }}>*Required</span>
+                      </label>
+                      <input
+                        type="text"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: 'white',
+                          fontSize: '14px'
+                        }}
+                        placeholder="e.g., ML, JD, PS (Your initials)"
+                        value={editFormData.reference_prefix || user.reference_prefix || ''}
+                        onChange={(e) => setEditFormData({...editFormData, reference_prefix: e.target.value.toUpperCase()})}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Report Counter</label>
+                      <input
+                        type="number"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: 'white',
+                          fontSize: '14px'
+                        }}
+                        placeholder="Next report number"
+                        value={editFormData.report_counter || user.report_counter || '1'}
+                        onChange={(e) => setEditFormData({...editFormData, report_counter: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'rgba(76, 175, 80, 0.1)',
+                    border: '1px solid rgba(76, 175, 80, 0.3)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '15px',
+                    fontSize: '13px'
+                  }}>
+                    📋 <strong>Reference Preview:</strong> Your next report reference will be:<br/>
+                    <div style={{ fontFamily: 'monospace', marginTop: '5px', paddingLeft: '15px', fontWeight: 'bold', color: '#4ECDC4' }}>
+                      {new Date().getFullYear()}/Misc./{editFormData.report_counter || user.report_counter || '1'}/{editFormData.reference_prefix || user.reference_prefix || 'XX'}
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '12px', opacity: '0.9' }}>
+                      Format: YEAR/TYPE/NUMBER/PREFIX (e.g., 2025/Misc./348/ML)
+                    </div>
+                  </div>
+                </div>
+
                 {/* Qualifications Section */}
                 <div style={{ marginBottom: '25px' }}>
-                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>🎓 Qualifications</h3>
+                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>🎓 Professional Qualifications</h3>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Professional Qualifications</label>
-                    <textarea
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
-                        color: 'white',
-                        fontSize: '14px',
-                        minHeight: '80px',
-                        resize: 'vertical'
-                      }}
-                      placeholder="List your qualifications (e.g., BSc Estate Management, MSc Real Estate, RICS, etc.)"
-                      value={editFormData.qualifications || (typeof user.qualifications === 'string' ? user.qualifications : (user.qualifications ? user.qualifications.join(', ') : '')) || ''}
-                      onChange={(e) => setEditFormData({...editFormData, qualifications: e.target.value})}
-                    />
+                    <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>
+                      Add Your Qualifications (one by one for proper report formatting)
+                    </label>
+
+                    {/* Display current qualifications */}
+                    <div style={{ marginBottom: '15px' }}>
+                      {(() => {
+                        const currentQuals = editFormData.qualifications ||
+                          (typeof user.qualifications === 'string' ?
+                            user.qualifications.split(',').map(q => q.trim()).filter(Boolean) :
+                            user.qualifications || []);
+
+                        return currentQuals.map((qual, index) => (
+                          <div key={index} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: 'rgba(255,255,255,0.05)',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            marginBottom: '5px',
+                            border: '1px solid rgba(255,255,255,0.2)'
+                          }}>
+                            <span style={{ flex: 1, fontSize: '14px' }}>{qual}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newQuals = currentQuals.filter((_, i) => i !== index);
+                                setEditFormData({...editFormData, qualifications: newQuals});
+                              }}
+                              style={{
+                                background: 'rgba(255,0,0,0.3)',
+                                border: 'none',
+                                color: 'white',
+                                borderRadius: '4px',
+                                padding: '4px 8px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+
+                    {/* Add new qualification */}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="e.g., B.Sc. (Hons.) Estate Management"
+                        style={{
+                          flex: 1,
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: 'white',
+                          fontSize: '14px'
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const newQual = e.target.value.trim();
+                            if (newQual) {
+                              const currentQuals = editFormData.qualifications ||
+                                (typeof user.qualifications === 'string' ?
+                                  user.qualifications.split(',').map(q => q.trim()).filter(Boolean) :
+                                  user.qualifications || []);
+                              setEditFormData({
+                                ...editFormData,
+                                qualifications: [...currentQuals, newQual]
+                              });
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          const input = e.target.previousElementSibling;
+                          const newQual = input.value.trim();
+                          if (newQual) {
+                            const currentQuals = editFormData.qualifications ||
+                              (typeof user.qualifications === 'string' ?
+                                user.qualifications.split(',').map(q => q.trim()).filter(Boolean) :
+                                user.qualifications || []);
+                            setEditFormData({
+                              ...editFormData,
+                              qualifications: [...currentQuals, newQual]
+                            });
+                            input.value = '';
+                          }
+                        }}
+                        style={{
+                          padding: '10px 20px',
+                          background: 'linear-gradient(45deg, #4ECDC4, #44A08D)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: '12px', opacity: '0.8', marginTop: '8px' }}>
+                      Common qualifications: B.Sc. Estate Management, M.Sc. REM, M.R.I.C.S., F.I.V.S.L., F.P.C.S.
+                    </div>
                   </div>
                 </div>
 
                 {/* Contact Information Section */}
                 <div style={{ marginBottom: '25px' }}>
-                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📞 Contact Information</h3>
+                  <h3 style={{ color: '#4ECDC4', marginBottom: '15px' }}>📞 Contact Information (For Report Letterhead)</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Phone Number</label>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
+                        Telephone <span style={{ color: '#FF9800' }}>*Required for Reports</span>
+                      </label>
                       <input
                         type="tel"
                         style={{
@@ -911,7 +1071,9 @@ const DashboardPage = () => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>Mobile Number</label>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '600' }}>
+                        Mobile <span style={{ color: '#FF9800' }}>*Required for Reports</span>
+                      </label>
                       <input
                         type="tel"
                         style={{
@@ -945,6 +1107,22 @@ const DashboardPage = () => {
                         value={editFormData.alternative_contact || user.alternative_contact || ''}
                         onChange={(e) => setEditFormData({...editFormData, alternative_contact: e.target.value})}
                       />
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'rgba(76, 175, 80, 0.1)',
+                    border: '1px solid rgba(76, 175, 80, 0.3)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '15px',
+                    fontSize: '13px'
+                  }}>
+                    💡 <strong>Report Preview:</strong> Your contact details will appear in reports as:<br/>
+                    <div style={{ fontFamily: 'monospace', marginTop: '5px', paddingLeft: '15px' }}>
+                      Telephone: {editFormData.phone_number || user.phone_number || '[Not provided]'}<br/>
+                      Mobile: {editFormData.mobile_number || user.mobile_number || '[Not provided]'}<br/>
+                      E-mail: {user.email}
                     </div>
                   </div>
                 </div>
