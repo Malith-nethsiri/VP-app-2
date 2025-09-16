@@ -8,6 +8,7 @@ import UserDashboard from './components/UserDashboard';
 import ProfessionalCredentials from './components/ProfessionalCredentials';
 import Login from './components/Login';
 import EmailVerification from './components/EmailVerification';
+import LandingPage from './components/LandingPage';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -317,7 +318,7 @@ const Home: React.FC = () => {
           </button>
           {healthStatus && (
             <div style={{ fontSize: '11px', marginTop: '5px', opacity: 0.6 }}>
-              Status: {healthStatus.status} | v2.2
+              Status: {healthStatus.status} | v3.0-LANDING-PAGE-ACTIVE
             </div>
           )}
         </footer>
@@ -330,7 +331,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/status" element={<Home />} />
         <Route path="/register" element={<UserRegistration />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-email" element={<EmailVerification />} />
