@@ -184,7 +184,7 @@ class DatabaseService {
   async updateUserProfile(userId, profileData) {
     const {
       honorable, full_name, professional_title, qualifications,
-      professional_status, ivsl_membership_type,
+      ivsl_registration, professional_status, ivsl_membership_type,
       house_number, street_name, area_name, city, district,
       phone_number, mobile_number, alternative_contact
     } = profileData;
@@ -195,21 +195,23 @@ class DatabaseService {
         full_name = COALESCE($3, full_name),
         professional_title = COALESCE($4, professional_title),
         qualifications = COALESCE($5, qualifications),
-        professional_status = COALESCE($6, professional_status),
-        ivsl_membership_type = COALESCE($7, ivsl_membership_type),
-        house_number = COALESCE($8, house_number),
-        street_name = COALESCE($9, street_name),
-        area_name = COALESCE($10, area_name),
-        city = COALESCE($11, city),
-        district = COALESCE($12, district),
-        phone_number = COALESCE($13, phone_number),
-        mobile_number = COALESCE($14, mobile_number),
-        alternative_contact = COALESCE($15, alternative_contact),
+        ivsl_registration = COALESCE($6, ivsl_registration),
+        professional_status = COALESCE($7, professional_status),
+        ivsl_membership_type = COALESCE($8, ivsl_membership_type),
+        house_number = COALESCE($9, house_number),
+        street_name = COALESCE($10, street_name),
+        area_name = COALESCE($11, area_name),
+        city = COALESCE($12, city),
+        district = COALESCE($13, district),
+        phone_number = COALESCE($14, phone_number),
+        mobile_number = COALESCE($15, mobile_number),
+        alternative_contact = COALESCE($16, alternative_contact),
         updated_at = NOW()
       WHERE id = $1 RETURNING *`,
       [
         userId, honorable, full_name, professional_title,
-        JSON.stringify(qualifications), professional_status, ivsl_membership_type,
+        typeof qualifications === 'string' ? qualifications : JSON.stringify(qualifications),
+        ivsl_registration, professional_status, ivsl_membership_type,
         house_number, street_name, area_name, city, district,
         phone_number, mobile_number, alternative_contact
       ]

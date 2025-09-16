@@ -150,11 +150,11 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Validate honorable values
-    const validHonorables = ['Dr', 'Mr', 'Vir', 'Ms', 'Mrs'];
+    const validHonorables = ['Dr', 'Mr', 'Vlr', 'Ms', 'Mrs'];
     if (honorable && !validHonorables.includes(honorable)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid honorable. Must be one of: Dr, Mr, Vir, Ms, Mrs'
+        error: 'Invalid title. Must be one of: Dr, Mr, Vlr, Ms, Mrs'
       });
     }
 
@@ -292,7 +292,7 @@ app.get('/api/auth/profile', async (req, res) => {
   }
 });
 
-// Update user profile endpoint
+// Update user profile endpoint (PUT method)
 app.put('/api/auth/profile', async (req, res) => {
   try {
     const { userId, ...profileData } = req.body;
@@ -302,6 +302,79 @@ app.put('/api/auth/profile', async (req, res) => {
         success: false,
         error: 'User ID is required'
       });
+    }
+
+    const updatedUser = await db.updateUserProfile(userId, profileData);
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Remove sensitive information
+    const { password_hash, email_verification_token, ...userProfile } = updatedUser;
+
+    res.json({
+      success: true,
+      message: '✅ Profile updated successfully',
+      user: userProfile,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update profile',
+      details: error.message
+    });
+  }
+});
+
+// Update user profile endpoint (POST method for frontend compatibility)
+app.post('/api/auth/update-profile', async (req, res) => {
+  try {
+    const { userId, ...profileData } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    // Validate honorable values if provided
+    if (profileData.honorable) {
+      const validHonorables = ['Dr', 'Mr', 'Vlr', 'Ms', 'Mrs'];
+      if (!validHonorables.includes(profileData.honorable)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid title. Must be one of: Dr, Mr, Vlr, Ms, Mrs'
+        });
+      }
+    }
+
+    // Validate IVSL membership type if provided
+    if (profileData.ivsl_membership_type) {
+      const validMemberships = ['Fellow', 'Member', 'Associate', 'Student'];
+      if (!validMemberships.includes(profileData.ivsl_membership_type)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid IVSL membership type'
+        });
+      }
+    }
+
+    // Validate professional status if provided
+    if (profileData.professional_status) {
+      const validStatuses = ['Licensed Valuer', 'Provisional Valuer', 'Trainee Valuer', 'Consulting Valuer'];
+      if (!validStatuses.includes(profileData.professional_status)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid professional status'
+        });
+      }
     }
 
     const updatedUser = await db.updateUserProfile(userId, profileData);
