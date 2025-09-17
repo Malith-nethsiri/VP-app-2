@@ -365,7 +365,7 @@ const DashboardPage: React.FC = () => {
               <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📝</div>
               <h3>No Reports Created Yet</h3>
               <p style={{ opacity: 0.8, marginBottom: '25px' }}>
-                Start creating your first professional valuation report
+                Start creating your first professional valuation report with AI-powered document processing
               </p>
               <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                 <button
