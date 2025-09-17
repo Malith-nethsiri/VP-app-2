@@ -31,7 +31,7 @@ const HomePage: React.FC = () => {
             🚀 Get Started - Register Now
           </Link>
           <Link to="/login" className="cta-button secondary">
-            🔐 Login to Dashboard
+            Login to Dashboard
           </Link>
         </div>
       </div>
