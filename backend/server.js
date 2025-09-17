@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const db = require('./database');
 const visionService = require('./visionService');
 const aiExtractionService = require('./aiExtractionService');
+const locationService = require('./locationService');
 
 const app = express();
 
@@ -76,7 +77,10 @@ app.get('/api/test', (req, res) => {
       'POST /api/ai/test - AI service testing',
       'POST /api/vision/test - Google Vision API testing',
       'POST /api/ai/test - OpenAI GPT-4 API testing',
-      'POST /api/documents/upload - Document upload (coming soon)'
+      'POST /api/documents/upload - Document upload with AI processing',
+      'POST /api/location/analyze - GPS coordinate location analysis',
+      'GET /api/location/amenities - Find nearby amenities',
+      'POST /api/location/test - Google Maps API testing'
     ]
   });
 });
@@ -743,6 +747,240 @@ app.post('/api/ai/test', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'OpenAI API test failed',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Location Intelligence & Mapping Endpoints (Task 3)
+
+// Main location analysis endpoint
+app.post('/api/location/analyze', async (req, res) => {
+  try {
+    const { coordinates, report_id } = req.body;
+
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid GPS coordinates (lat, lng) are required'
+      });
+    }
+
+    console.log(`🌍 Analyzing location: ${coordinates.lat}, ${coordinates.lng}`);
+
+    const locationAnalysis = await locationService.analyzeLocation(coordinates);
+
+    if (locationAnalysis.success) {
+      // Optionally save to report if report_id provided
+      if (report_id) {
+        try {
+          await db.updateReport(report_id, {
+            report_data: {
+              location_analysis: locationAnalysis.data,
+              gps_coordinates: coordinates
+            }
+          });
+          console.log(`📊 Location analysis saved to report ${report_id}`);
+        } catch (dbError) {
+          console.warn('Failed to save location analysis to report:', dbError.message);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: '✅ Location analysis completed successfully',
+        location_data: locationAnalysis.data,
+        analysis_summary: {
+          coordinates: coordinates,
+          amenities_found: Object.values(locationAnalysis.data.nearby_amenities)
+            .reduce((sum, category) => sum + category.length, 0),
+          administrative_coverage: Object.values(locationAnalysis.data.administrative_location)
+            .filter(value => value !== null).length,
+          map_available: !!locationAnalysis.data.map_data.static_map_url
+        },
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        success: false,
+        error: locationAnalysis.error,
+        message: 'Location analysis failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+  } catch (error) {
+    console.error('Location analysis endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Location analysis service unavailable',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get nearby amenities for specific coordinates
+app.get('/api/location/amenities', async (req, res) => {
+  try {
+    const { lat, lng, radius = 5000, category } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        error: 'Latitude and longitude parameters are required'
+      });
+    }
+
+    const coordinates = { lat: parseFloat(lat), lng: parseFloat(lng) };
+    console.log(`🔍 Finding amenities near: ${coordinates.lat}, ${coordinates.lng}`);
+
+    const amenities = await locationService.findNearbyAmenities(coordinates, parseInt(radius));
+
+    // Filter by category if specified
+    const filteredAmenities = category && amenities[category]
+      ? { [category]: amenities[category] }
+      : amenities;
+
+    res.json({
+      success: true,
+      message: '✅ Nearby amenities found',
+      coordinates: coordinates,
+      search_radius: parseInt(radius),
+      amenities: filteredAmenities,
+      total_found: Object.values(filteredAmenities)
+        .reduce((sum, category) => sum + category.length, 0),
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Amenities search error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to find nearby amenities',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get administrative location details
+app.post('/api/location/administrative', async (req, res) => {
+  try {
+    const { coordinates } = req.body;
+
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid GPS coordinates are required'
+      });
+    }
+
+    const geocodeResults = await locationService.reverseGeocode(coordinates);
+    const administrative = locationService.extractAdministrativeDetails(geocodeResults);
+    const address = locationService.formatAddress(geocodeResults);
+
+    res.json({
+      success: true,
+      message: '✅ Administrative location details retrieved',
+      coordinates: coordinates,
+      administrative_location: administrative,
+      formatted_address: address,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Administrative location error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get administrative location details',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Generate map for coordinates
+app.post('/api/location/map', async (req, res) => {
+  try {
+    const { coordinates, width = 640, height = 400, zoom = 15 } = req.body;
+
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid GPS coordinates are required'
+      });
+    }
+
+    const staticMapUrl = locationService.generateStaticMapUrl(
+      coordinates,
+      parseInt(width),
+      parseInt(height),
+      parseInt(zoom)
+    );
+
+    const interactiveConfig = locationService.getInteractiveMapConfig(coordinates);
+
+    res.json({
+      success: true,
+      message: '✅ Map data generated',
+      coordinates: coordinates,
+      static_map: {
+        url: staticMapUrl,
+        width: parseInt(width),
+        height: parseInt(height),
+        zoom: parseInt(zoom)
+      },
+      interactive_map: interactiveConfig,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Map generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate map data',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Test Google Maps API connectivity
+app.post('/api/location/test', async (req, res) => {
+  try {
+    console.log('🧪 Testing Google Maps API connection...');
+    const testResult = await locationService.testConnection();
+
+    if (testResult.success) {
+      res.json({
+        success: true,
+        message: '✅ Google Maps API is working correctly',
+        connection: testResult,
+        available_services: [
+          'Reverse Geocoding',
+          'Places Search',
+          'Static Maps',
+          'Administrative Location Analysis',
+          'Amenity Discovery'
+        ],
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        success: false,
+        message: '❌ Google Maps API connection failed',
+        error: testResult.error,
+        details: 'Please check your Google Maps API key and enabled services',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    console.error('Maps API test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Maps API test failed',
       details: error.message,
       timestamp: new Date().toISOString()
     });

@@ -367,20 +367,37 @@ const DashboardPage: React.FC = () => {
               <p style={{ opacity: 0.8, marginBottom: '25px' }}>
                 Start creating your first professional valuation report
               </p>
-              <button
-                style={{
-                  padding: '15px 30px',
-                  background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '25px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                ➕ Create New Report
-              </button>
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                <button
+                  style={{
+                    padding: '15px 30px',
+                    background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '25px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ➕ Create New Report
+                </button>
+                <button
+                  onClick={() => navigate('/location-test')}
+                  style={{
+                    padding: '15px 30px',
+                    background: 'linear-gradient(45deg, #4ECDC4, #45B7D1)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '25px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🌍 Test Location Intelligence
+                </button>
+              </div>
             </div>
           </div>
         )}
