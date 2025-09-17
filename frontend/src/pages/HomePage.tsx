@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
             👤 Register
           </Link>
           <Link to="/login" className="nav-button login">
-            🔐 Login
+            Login
           </Link>
         </div>
       </nav>
