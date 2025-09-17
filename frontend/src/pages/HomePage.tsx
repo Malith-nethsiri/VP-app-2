@@ -20,7 +20,7 @@ const HomePage: React.FC = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <h1 className="hero-title">
-          🏠 AI-Powered Valuation System
+          AI-Powered Valuation System
         </h1>
         <p className="hero-subtitle">
           Professional Property Valuation Reports with AI Technology
