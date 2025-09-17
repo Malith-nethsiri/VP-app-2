@@ -31,7 +31,7 @@ const DashboardPage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('reports');
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
